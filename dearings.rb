@@ -10,17 +10,7 @@ end
 # Capture some data for stats
 def capture_user_info(request, url_id)
   ci = ClickInstance.new
-  ci.referer = request.referer
-  ci.accept = request.env["HTTP_ACCEPT"]
-  ci.accept_encoding = request.env["HTTP_ACCEPT_ENCODING"]
-  ci.accept_charset = request.env["HTTP_ACCEPT_CHARSET"]
-  ci.accept_language = request.env["HTTP_ACCEPT_LANGUAGE"]
-  ci.from = request.env["REMOTE_ADDR"] || request.ip
-  ci.via = request.env["HTTP_VIA"]
-  ci.request_uri = request.url
-  ci.user_agent = request.user_agent
-  ci.http_version = request.env["HTTP_VERSION"]
-  ci.shortened_url_id = url_id
+  ci.data = request.env
   ci.save
 end
 
