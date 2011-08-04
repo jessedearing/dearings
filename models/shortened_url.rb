@@ -9,6 +9,7 @@ class ShortenedUrl
   field :long_url
   field :clicks, :type => Integer, :default => 0
   field :slug
+  field :subdomain
 
   index :int_id
   index :slug
@@ -19,6 +20,11 @@ class ShortenedUrl
 
   def self.find_by_param_id(int_id)
     where(:int_id => int_id.to_i(36))
+  end
+
+  def self.filter_subdomain(subdomain)
+    return self if subdomain.nil?
+    self.where(:subdomain => subdomain)
   end
 
   def param

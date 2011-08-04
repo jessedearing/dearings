@@ -1,4 +1,5 @@
 require 'sinatra'
+require 'sinatra/subdomain'
 require './models'
 
 # Capture some data for stats
@@ -23,14 +24,29 @@ def not_valid
   "Invalid url"
 end
 
-get '/:id' do
+def post_new_url(params, subdomain=nil)
+  su = ShortenedUrl.new
+  su.long_url = params[:url]
+  su.subdomain = subdomain unless subdomain.nil?
+  last = ShortenedUrl.last
+  if last.nil?
+    su.int_id = 1
+  else
+    su.int_id = last.int_id + 1
+  end
+  su.slug = params[:slug] if params[:slug]
+  su.save!
+  "url=#{su.to_url(request)}"
+end
+
+def send_to_long_url(params, subdomain=nil)
   begin
     if params[:id] =~ /[0-9a-z]/
       # to_i(36) will use a radix of 36 when parsing a string
-      url = ShortenedUrl.find_by_param_id(params[:id]).first
+      url = ShortenedUrl.filter_subdomain(subdomain).find_by_param_id(params[:id]).first
       if url.nil?
-        if ShortenedUrl.where(:slug => params[:id]).exists?
-          url = ShortenedUrl.where(:slug => params[:id]).first
+        if ShortenedUrl.filter_subdomain(subdomain).where(:slug => params[:id]).exists?
+          url = ShortenedUrl.filter_subdomain(subdomain).where(:slug => params[:id]).first
         else
           status 404
           return "URL not found"
@@ -42,23 +58,27 @@ get '/:id' do
     else
       not_valid
     end
-  # rescue
-  #   not_valid
+  rescue
+    not_valid
   end
+end
+
+subdomain do
+  post '/url/new' do
+    post_new_url(params, subdomain)
+  end
+
+  get '/:id' do
+    send_to_long_url(params, subdomain)
+  end
+end
+
+get '/:id' do
+  send_to_long_url(params)
 end
 
 # Where the link gets added
 # Secure this path on your webserver
 post '/url/new' do
-  su = ShortenedUrl.new
-  su.long_url = params[:url]
-  last = ShortenedUrl.last
-  if last.nil?
-    su.int_id = 1
-  else
-    su.int_id = last.int_id + 1
-  end
-  su.slug = params[:slug] if params[:slug]
-  su.save!
-  "url=#{su.to_url(request)}"
+  post_new_url(params)
 end
