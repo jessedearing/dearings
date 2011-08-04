@@ -3,6 +3,7 @@ require 'bundler/capistrano'
 set :application, "dearings"
 set :repository,  "git@github.com:jessedearing/dearings.git"
 set :deploy_to, '/var/www/dearings'
+set :rails_env, 'production'
 set :user, 'jessed'
 set :use_sudo, false
 
