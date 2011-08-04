@@ -15,7 +15,7 @@ def capture_user_info(request, url_id)
   ci.accept_encoding = request.env["HTTP_ACCEPT_ENCODING"]
   ci.accept_charset = request.env["HTTP_ACCEPT_CHARSET"]
   ci.accept_language = request.env["HTTP_ACCEPT_LANGUAGE"]
-  ci.from = request.ip
+  ci.from = request.env["REMOTE_ADDR"] || request.ip
   ci.via = request.env["HTTP_VIA"]
   ci.request_uri = request.url
   ci.user_agent = request.user_agent
