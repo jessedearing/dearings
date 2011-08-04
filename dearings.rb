@@ -1,5 +1,4 @@
 require 'sinatra'
-require 'awesome_print'
 Dir['./models/*.rb'].each do |model|
   require model
 end
