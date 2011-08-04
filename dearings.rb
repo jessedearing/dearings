@@ -10,7 +10,17 @@ end
 # Capture some data for stats
 def capture_user_info(request, url_id)
   ci = ClickInstance.new
-  ci.data = request.env
+  ci.referer = request.referer
+  ci.accept = request.env["HTTP_ACCEPT"]
+  ci.accept_encoding = request.env["HTTP_ACCEPT_ENCODING"]
+  ci.accept_charset = request.env["HTTP_ACCEPT_CHARSET"]
+  ci.accept_language = request.env["HTTP_ACCEPT_LANGUAGE"]
+  ci.from = request.env["HTTP_X_FORWARDED_FOR"] || request.ip
+  ci.via = request.env["HTTP_VIA"]
+  ci.request_uri = request.url
+  ci.user_agent = request.user_agent
+  ci.http_version = request.env["HTTP_VERSION"]
+  ci.shortened_url_id = url_id
   ci.save
 end
 
@@ -20,7 +30,7 @@ def not_valid
 end
 
 get '/:id' do
-  begin
+  # begin
     if params[:id] =~ /[0-9a-z]/
       # to_i(36) will use a radix of 36 when parsing a string
       url = ShortenedUrl.where(:int_id => params[:id].to_i(36)).first
@@ -30,9 +40,9 @@ get '/:id' do
     else
       not_valid
     end
-  rescue
+  # rescue
     not_valid
-  end
+  # end
 end
 
 # Where the link gets added
