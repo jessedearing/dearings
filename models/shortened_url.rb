@@ -10,6 +10,9 @@ class ShortenedUrl
   field :clicks, :type => Integer, :default => 0
   field :slug
 
+  index :int_id
+  index :slug
+
   def to_url(request)
     "#{request.scheme}://#{request.host}/#{self.param}"
   end
