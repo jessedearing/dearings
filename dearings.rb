@@ -1,11 +1,5 @@
 require 'sinatra'
-Dir['./models/*.rb'].each do |model|
-  require model
-end
-
-Mongoid.configure do |config|
-  config.master = Mongo::Connection.new.db("dearings")
-end
+require './models'
 
 # Capture some data for stats
 def capture_user_info(request, url_id)
@@ -33,10 +27,14 @@ get '/:id' do
   begin
     if params[:id] =~ /[0-9a-z]/
       # to_i(36) will use a radix of 36 when parsing a string
-      url = ShortenedUrl.where(:int_id => params[:id].to_i(36)).first
+      url = ShortenedUrl.find_by_param_id(params[:id]).first
       if url.nil?
-        status 404
-        return "URL not found"
+        if ShortenedUrl.where(:slug => params[:id]).exists?
+          url = ShortenedUrl.where(:slug => params[:id]).first
+        else
+          status 404
+          return "URL not found"
+        end
       end
       url.inc(:clicks, 1)
       capture_user_info(request, url.id)
@@ -44,8 +42,8 @@ get '/:id' do
     else
       not_valid
     end
-  rescue
-    not_valid
+  # rescue
+  #   not_valid
   end
 end
 
@@ -60,6 +58,7 @@ post '/url/new' do
   else
     su.int_id = last.int_id + 1
   end
+  su.slug = params[:slug] if params[:slug]
   su.save!
-  "url=#{request.scheme}://#{request.host}/#{su.int_id.to_s(36)}"
+  "url=#{su.to_url(request)}"
 end
