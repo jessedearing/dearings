@@ -30,19 +30,23 @@ def not_valid
 end
 
 get '/:id' do
-  # begin
+  begin
     if params[:id] =~ /[0-9a-z]/
       # to_i(36) will use a radix of 36 when parsing a string
       url = ShortenedUrl.where(:int_id => params[:id].to_i(36)).first
+      if url.nil?
+        status 404
+        return "URL not found"
+      end
       url.inc(:clicks, 1)
       capture_user_info(request, url.id)
       redirect url.long_url
     else
       not_valid
     end
-  # rescue
+  rescue
     not_valid
-  # end
+  end
 end
 
 # Where the link gets added
