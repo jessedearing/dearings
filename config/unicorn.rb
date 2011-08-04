@@ -9,9 +9,6 @@ preload_app true
 # Restart any workers that haven't responded in 30 seconds
 timeout 30
 
-# Listen on a Unix data socket
-listen "/var/run/dearings-unicorn.sock", :backlog => 2048
-
 pid("#{File.dirname(__FILE__)}/../tmp/pids/unicorn.pid")
 
 ##
